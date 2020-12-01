@@ -203,7 +203,9 @@ typedef VST3_Queue<uint32_t,VST3_QUEUE_SIZE> VST3_UpdateQueue;
 //----------------------------------------------------------------------
 
 class VST3_Parameter {
+  
 public:
+  
   const char* name          = "parameter";
   const char* short_name    = "param";
   const char* label         = "";
