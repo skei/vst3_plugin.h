@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1607268733 source:/DISKS/sda2/code/git/vst3_plugin.h/again.cpp
+	"vst3_plugin.h"
+
+1607286160 /DISKS/sda2/code/git/vst3_plugin.h/vst3_plugin.h
+	<memory.h>
+	<stdint.h>
+	<stdio.h>
+	<stdlib.h>
+	<vector>
+	"vst3.h"
+
+1607286406 /DISKS/sda2/code/git/vst3_plugin.h/vst3.h
+

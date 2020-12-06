@@ -1,0 +1,5 @@
+*.o
+backup.txt
+backup/
+pluginterfaces/
+

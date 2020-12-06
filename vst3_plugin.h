@@ -36,7 +36,6 @@
 
 //----------------------------------------------------------------------
 
-#define VST3_DEMO
 #define VST3_NO_GUI
 
 //----------------------------------------------------------------------
@@ -45,17 +44,22 @@
 //
 //----------------------------------------------------------------------
 
-#ifdef __gnu_linux__
-  #define VST3_LINUX
-#endif
+//#ifdef __gnu_linux__
+//  #define VST3_LINUX
+//#endif
+//
+//#ifdef _WIN32
+//  #define VST3_WIN32
+//#endif
 
-#ifdef _WIN32
-  #define VST3_WIN32
-#endif
-
+#include <memory.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 using namespace std;
+
+#include "vst3.h"
 
 //----------------------------------------------------------------------
 
@@ -80,60 +84,6 @@ using namespace std;
 #define VST3_PARAM_BRIGHTNESS       0x30000 // kCtrlFilterResonance (74)
 #define VST3_QUEUE_SIZE             1024
 #define VST3_TIMER_MS               30
-
-//----------------------------------------------------------------------
-//
-// vst3
-//
-//----------------------------------------------------------------------
-
-#include "pluginterfaces/base/coreiids.cpp"
-#include "pluginterfaces/base/ustring.cpp"
-#include "pluginterfaces/base/ipluginbase.h"
-#include "pluginterfaces/gui/iplugview.h"
-#include "pluginterfaces/vst/ivstaudioprocessor.h"
-#include "pluginterfaces/vst/ivstcomponent.h"
-
-#define setState setEditorState
-#define getState getEditorState
-#include "pluginterfaces/vst/ivsteditcontroller.h"
-#undef setState
-#undef getState
-
-#include "pluginterfaces/vst/ivstevents.h"
-#include "pluginterfaces/vst/ivsthostapplication.h"
-#include "pluginterfaces/vst/ivstmessage.h"
-#include "pluginterfaces/vst/ivstmidicontrollers.h"
-#include "pluginterfaces/vst/ivstnoteexpression.h"
-#include "pluginterfaces/vst/ivstparameterchanges.h"
-#include "pluginterfaces/vst/ivstunits.h"
-
-using namespace Steinberg;
-using namespace Steinberg::Linux;
-using namespace Vst;
-
-//----------------------------------------------------------------------
-
-#define CharToUtf16(C,U) UString128(C).copyTo(U,128)
-#define Utf16ToChar(U,C) UString128(U).toAscii(C,128)
-
-//----------
-
-//char* VST3_TuidToAscii(const TUID _iid, char* ABuffer) {
-//  const char hextable[] = "0123456789abcdef";
-//  char* ptr = ABuffer;
-//  for (uint32_t i=0; i<4; i++) {
-//    for (uint32_t j=0; j<4; j++) {
-//      uint32_t k = i * 4 + j;
-//      uint8_t byte = _iid[k];
-//      *ptr++ = hextable[byte >> 4];
-//      *ptr++ = hextable[byte % 15];
-//    }
-//    if (i<3) *ptr++ = '-';
-//  }
-//  *ptr = 0;
-//  return ABuffer;
-//}
 
 //----------------------------------------------------------------------
 //
@@ -203,9 +153,9 @@ typedef VST3_Queue<uint32_t,VST3_QUEUE_SIZE> VST3_UpdateQueue;
 //----------------------------------------------------------------------
 
 class VST3_Parameter {
-  
+
 public:
-  
+
   const char* name          = "parameter";
   const char* short_name    = "param";
   const char* label         = "";
@@ -380,33 +330,35 @@ class VST3_Instance
 
 private:
 
-  uint32_t                MRefCount           = 1;
-  IComponentHandler*      MComponentHandler   = nullptr;
-  IComponentHandler2*     MComponentHandler2  = nullptr;
-  IPlugFrame*             MPlugFrame          = nullptr;
-  IHostApplication*       MHostApp            = nullptr;
-  ParameterInfo*          MParamInfos         = nullptr;
-  IRunLoop*               MRunLoop            = nullptr;
-  uint32_t                MIoMode             = 0;
-  uint32_t                MProcessMode        = 0;
-  uint32_t                MSampleSize         = 0;
-  uint32_t                MBlockSize          = 0;
-  float                   MSampleRate         = 0.0f;
-  bool                    MIsProcessing       = false;
-  char                    MHostName[129]      = {0};
-  VST3_Descriptor*        MDescriptor           = nullptr;
-  VST3_Editor*            MEditor               = nullptr;
-  float*                  MParameterValues      = nullptr;
-  float*                  MHostParameterValues  = nullptr;
-  VST3_UpdateQueue        MHostParameterQueue;
+  uint32_t                  MRefCount           = 1;
+  IComponentHandler*   MComponentHandler   = nullptr;
+  IComponentHandler2*  MComponentHandler2  = nullptr;
+  IPlugFrame*          MPlugFrame          = nullptr;
+  IHostApplication*    MHostApp            = nullptr;
+  ParameterInfo*            MParamInfos         = nullptr;
+  IRunLoop*            MRunLoop            = nullptr;
+  uint32_t                  MIoMode             = 0;
+  uint32_t                  MProcessMode        = 0;
+  uint32_t                  MSampleSize         = 0;
+  uint32_t                  MBlockSize          = 0;
+  float                     MSampleRate         = 0.0f;
+  bool                      MIsProcessing       = false;
+  char                      MHostName[129]      = {0};
+  VST3_Descriptor*          MDescriptor           = nullptr;
+  VST3_Editor*              MEditor               = nullptr;
+  float*                    MParameterValues      = nullptr;
+  float*                    MHostParameterValues  = nullptr;
+  VST3_UpdateQueue          MHostParameterQueue;
 
 public:
 
   VST3_Instance() {
+    printf("VST3_Instance\n");
     MRefCount   = 1;
   }
 
   virtual ~VST3_Instance() {
+    printf("~VST3_Instance\n");
     _deleteParameterInfo();
     _destroyParameterBuffers();
   }
@@ -502,9 +454,9 @@ private:
       for (uint32_t i=0; i<num; i++) {
         VST3_Parameter* param = MDescriptor->parameters[i];
         MParamInfos[i].id = i;
-        CharToUtf16(param->name,MParamInfos[i].title);
-        CharToUtf16(param->short_name,MParamInfos[i].shortTitle);
-        CharToUtf16(param->label,MParamInfos[i].units);
+        /*CharToUtf16*/ char_to_utf16(param->name,&MParamInfos[i].title);
+        /*CharToUtf16*/ char_to_utf16(param->short_name,&MParamInfos[i].shortTitle);
+        /*CharToUtf16*/ char_to_utf16(param->label,&MParamInfos[i].units);
         MParamInfos[i].stepCount = param->num_steps;
         MParamInfos[i].defaultNormalizedValue = param->def_value;
         MParamInfos[i].unitId = kRootUnitId; //-1;
@@ -657,11 +609,13 @@ public:
   //--------------------
 
   uint32 PLUGIN_API addRef() final {
+    printf("VST3_Instance.addRef\n");
     MRefCount++;
     return MRefCount;
   }
 
   uint32 PLUGIN_API release() final {
+    printf("VST3_Instance.release\n");
     const uint32 r = --MRefCount; // const uint32 ?
     if (r == 0) {
       on_destroy();
@@ -671,45 +625,46 @@ public:
   }
 
   tresult PLUGIN_API queryInterface(const TUID _iid, void** obj) final {
+    printf("VST3_Instance.queryInterface\n");
     *obj = nullptr;
-    if ( FUnknownPrivate::iidEqual(IAudioProcessor_iid,_iid) ) {
+    if ( /*FUnknownPrivate::*/iidEqual(IAudioProcessor_iid,_iid) ) {
       *obj = (IAudioProcessor*)this;
       addRef();
       return kResultOk;
     }
-    if ( FUnknownPrivate::iidEqual(IEditController_iid,_iid) ) {
+    if ( /*FUnknownPrivate::*/iidEqual(IEditController_iid,_iid) ) {
       *obj = (IEditController*)this;
       addRef();
       return kResultOk;
     }
-    if ( FUnknownPrivate::iidEqual(IMidiMapping_iid,_iid) ) {
+    if ( /*FUnknownPrivate::*/iidEqual(IMidiMapping_iid,_iid) ) {
       *obj = (IMidiMapping*)this;
       addRef();
       return kResultOk;
     }
-    if ( FUnknownPrivate::iidEqual(IUnitInfo_iid,_iid) ) {
+    if ( /*FUnknownPrivate::*/iidEqual(IUnitInfo_iid,_iid) ) {
       *obj = (IUnitInfo*)this;
       addRef();
       return kResultOk;
     }
-    if ( FUnknownPrivate::iidEqual(INoteExpressionController_iid,_iid) ) {
-      //*obj = (INoteExpressionController*)this;
-      //addRef();
-      //return kResultOk;
-      return kNoInterface;
-    }
-    if ( FUnknownPrivate::iidEqual(IKeyswitchController_iid,_iid) ) {
+//    if ( /*FUnknownPrivate::*/iidEqual(INoteExpressionController_iid,_iid) ) {
+//      //*obj = (INoteExpressionController*)this;
+//      //addRef();
+//      //return kResultOk;
+//      return kNoInterface;
+//    }
+    if ( /*FUnknownPrivate::*/iidEqual(IKeyswitchController_iid,_iid) ) {
       //*obj = (IKeyswitchController*)this;
       //addRef();
       //return kResultOk;
       return kNoInterface;
     }
-    if ( FUnknownPrivate::iidEqual(IConnectionPoint_iid,_iid) ) {
+    if ( /*FUnknownPrivate::*/iidEqual(IConnectionPoint_iid,_iid) ) {
       *obj = (IConnectionPoint*)this;
       addRef();
       return kResultOk;
     }
-    //if ( FUnknownPrivate::iidEqual(ITimerHandler_iid,_iid) ) {
+    //if ( /*FUnknownPrivate::*/iidEqual(ITimerHandler_iid,_iid) ) {
     //  *obj = (ITimerHandler*)this;
     //  addRef();
     //  return kResultOk;
@@ -722,12 +677,13 @@ public:
   //--------------------
 
   tresult PLUGIN_API initialize(FUnknown* context) final {
+    printf("VST3_Instance.initialize\n");
     MHostApp = (IHostApplication*)context;
     //context->queryInterface(IHostApplication_iid, (void**)&MHostApp);
     if (MHostApp) {
       String128 u;
       MHostApp->getName(u);
-      Utf16ToChar(u,MHostName);
+      utf16_to_char(&u,MHostName);
     }
     else {
     }
@@ -736,11 +692,13 @@ public:
   }
 
   tresult PLUGIN_API terminate() final {
+    printf("VST3_Instance.terminate\n");
     on_terminate();
     return kResultOk;
   }
 
   tresult PLUGIN_API getControllerClassId(TUID classId) final {
+    printf("VST3_Instance.getControllerClassId\n");
     if (MDescriptor->has_editor) {
       memcpy(classId,MDescriptor->editor_id,16);
       return kResultOk;
@@ -751,6 +709,7 @@ public:
   }
 
   tresult PLUGIN_API setIoMode(IoMode mode) final {
+    printf("VST3_Instance.setIoMode\n");
     MIoMode = mode;
     return kResultOk;
   }
@@ -776,12 +735,12 @@ public:
       if (dir == kInput) {
         bus.direction = kInput;
         bus.channelCount = MDescriptor->num_inputs;
-        CharToUtf16("Audio In",bus.name);
+        /*CharToUtf16*/ char_to_utf16("Audio In",&bus.name);
       }
       else {
         bus.direction = kOutput;
         bus.channelCount = MDescriptor->num_outputs;
-        CharToUtf16("Audio Out",bus.name);
+        /*CharToUtf16*/ char_to_utf16("Audio Out",&bus.name);
       }
       bus.flags = 0;//kDefaultActive;
       return kResultOk;
@@ -791,7 +750,7 @@ public:
       if (dir == kInput) {
         bus.direction = kInput;
         bus.channelCount = 1;
-        CharToUtf16("Midi In",bus.name);
+        /*CharToUtf16*/ char_to_utf16("Midi In",&bus.name);
       }
       bus.flags = 0;//kDefaultActive;
       return kResultOk;
@@ -880,7 +839,7 @@ public:
 
   tresult PLUGIN_API getBusArrangement(BusDirection dir, int32 index, SpeakerArrangement& arr) final {
     if ((dir==kOutput) && (index==0)) {
-      arr = Steinberg::Vst::kSpeakerL | Steinberg::Vst::kSpeakerR;
+      arr = kSpeakerL | kSpeakerR;
       return kResultOk;
     }
     return kResultFalse;
@@ -1060,7 +1019,7 @@ public:
     if (unitIndex==0) {
       info.id = kRootUnitId;
       info.parentUnitId = kNoParentUnitId;
-      CharToUtf16("root",info.name);
+      /*CharToUtf16*/ char_to_utf16("root",&info.name);
       info.programListId = kNoProgramListId;
       return kResultOk;
     }
@@ -1074,7 +1033,7 @@ public:
   tresult PLUGIN_API getProgramListInfo(int32 listIndex, ProgramListInfo& info) final {
     if (listIndex == 0) {
       info.id = 0;
-      CharToUtf16("program",info.name);
+      /*CharToUtf16*/ char_to_utf16("program",&info.name);
       info.programCount = 1;
       return kResultOk;
     }
@@ -1083,16 +1042,16 @@ public:
 
   tresult PLUGIN_API getProgramName(ProgramListID listId, int32 programIndex, String128 name) final {
     if ((listId == 0) && (programIndex == 0)) {
-      CharToUtf16("program",name);
+      /*CharToUtf16*/ char_to_utf16("program",&name);
       return kResultOk;
     }
     return kResultFalse;
   }
 
-  tresult PLUGIN_API getProgramInfo(ProgramListID listId, int32 programIndex, Steinberg::Vst::CString attributeId, String128 attributeValue) final {
+  tresult PLUGIN_API getProgramInfo(ProgramListID listId, int32 programIndex, CString attributeId, String128 attributeValue) final {
     ////attributeId = "";
     //if ((listId == 0) && (programIndex == 0) /* attributeId */) {
-    //  VST3_CharToUtf16("",attributeValue);
+    //  /*CharToUtf16*/ char_to_utf16("",attributeValue);
     //  return kResultOk;
     //}
     return kResultFalse;
@@ -1103,7 +1062,7 @@ public:
   }
 
   tresult PLUGIN_API getProgramPitchName(ProgramListID listId, int32 programIndex, int16 midiPitch, String128 name) final {
-    //VST3_CharToUtf16("pitch",name);
+    // /*CharToUtf16*/ char_to_utf16("pitch",name);
     return kResultFalse;
   }
 
@@ -1131,6 +1090,7 @@ public:
   tresult PLUGIN_API setComponentState(IBStream* state) final {
     return kResultOk;
   }
+
 
   tresult PLUGIN_API setEditorState(IBStream* state) final {
     return kResultOk;
@@ -1181,7 +1141,7 @@ public:
       char temp[129]; // ???
       VST3_Parameter* param = MDescriptor->parameters[id];
       param->displayText(valueNormalized,temp);
-      CharToUtf16(temp,string);
+      /*CharToUtf16*/ char_to_utf16(temp,string);
       return kResultOk;
     }
     else {
@@ -1192,7 +1152,7 @@ public:
   tresult PLUGIN_API getParamValueByString(ParamID id, TChar* string, ParamValue& valueNormalized) final {
     if (id < MDescriptor->parameters.size()) {
       char temp[129];
-      Utf16ToChar(string,temp);
+      utf16_to_char(string,temp);
       float v = atoi(temp);
       VST3_Parameter* param = MDescriptor->parameters[id];
       float v2 = param->to01(v);
@@ -1254,7 +1214,7 @@ public:
 
   IPlugView* PLUGIN_API createView(FIDString name) final {
     if (MDescriptor->has_editor) {
-      if (name && (strcmp(name,ViewType::kEditor) == 0)) {
+      if (name && (strcmp(name,/*ViewType::*/kEditor) == 0)) {
         addRef();
         return (IPlugView*)this;
       }
@@ -1419,9 +1379,11 @@ public:
 
   VST3_Plugin() {
     MRefCount = 1;
+    printf("VST3_Plugin\n");
   }
 
   virtual ~VST3_Plugin() {
+    printf("~VST3_Plugin\n");
   }
 
 //------------------------------
@@ -1433,23 +1395,26 @@ public:
   //--------------------
 
   uint32 PLUGIN_API addRef() final {
+    printf("VST3_Plugin.addRef\n");
     MRefCount++;
     return MRefCount;
   }
 
   uint32 PLUGIN_API release() final {
+    printf("VST3_Plugin.release\n");
     const uint32_t r = --MRefCount;
     if (r == 0) delete this;
     return r;
   }
 
   tresult PLUGIN_API queryInterface(const TUID _iid, void** obj) final {
-    if (FUnknownPrivate::iidEqual(IPluginFactory2_iid,_iid)) {
+    printf("VST3_Plugin.queryInterface\n");
+    if (/*FUnknownPrivate::*/iidEqual(IPluginFactory2_iid,_iid)) {
       *obj = (IPluginFactory2*)this;
       addRef();
       return kResultOk;
     }
-    if (FUnknownPrivate::iidEqual(IPluginFactory3_iid,_iid)) {
+    if (/*FUnknownPrivate::*/iidEqual(IPluginFactory3_iid,_iid)) {
       *obj = (IPluginFactory3*)this;
       addRef();
       return kResultOk;
@@ -1463,6 +1428,7 @@ public:
   //--------------------
 
   tresult PLUGIN_API getFactoryInfo(PFactoryInfo* info) final {
+    printf("VST3_Plugin.getFactoryInfo\n");
     strcpy(info->vendor,MDescriptor.author);
     strcpy(info->url,MDescriptor.url);
     strcpy(info->email,MDescriptor.email);
@@ -1471,10 +1437,12 @@ public:
   }
 
   int32 PLUGIN_API countClasses() final {
+    printf("VST3_Plugin.countClasses\n");
     return 1;
   }
 
   tresult PLUGIN_API getClassInfo(int32 index, PClassInfo* info) final {
+    printf("VST3_Plugin.getClassInfo\n");
     switch (index) {
       case 0:
         memcpy(info->cid,MDescriptor.plugin_id,16);
@@ -1487,13 +1455,14 @@ public:
   }
 
   tresult PLUGIN_API createInstance(FIDString cid, FIDString _iid, void** obj) final {
-    if (FUnknownPrivate::iidEqual(MDescriptor.plugin_id,cid)) {
+    printf("VST3_Plugin.createInstance\n");
+    if (/*FUnknownPrivate::*/iidEqual(MDescriptor.plugin_id,cid)) {
       INST* instance = new INST(/*&MDescriptor*/);
       instance->_setDescriptor(&MDescriptor);
       instance->on_create();
       instance->_setDefaultParameterValues();
       instance->_updateAllParameters();
-      *obj = (Vst::IComponent*)instance;
+      *obj = (/*Vst::*/IComponent*)instance;
       return kResultOk;
     }
     *obj = nullptr;
@@ -1505,6 +1474,7 @@ public:
   //--------------------
 
   tresult PLUGIN_API getClassInfo2(int32 index, PClassInfo2* info) final {
+    printf("VST3_Plugin.getClassInfo2\n");
     switch (index) {
       case 0:
         memcpy(info->cid,MDescriptor.plugin_id,16);
@@ -1513,10 +1483,10 @@ public:
         strcpy(info->name,MDescriptor.name);
         info->classFlags = 0;
         if (MDescriptor.is_synth) {
-          strcpy(info->subCategories,Vst::PlugType::kInstrument);
+          strcpy(info->subCategories,/*Vst::PlugType::*/kInstrument);
         }
         else {
-          strcpy(info->subCategories,Vst::PlugType::kFx);
+          strcpy(info->subCategories,/*Vst::PlugType::*/kFx);
         }
         strcpy(info->vendor,MDescriptor.author);
         strcpy(info->version,MDescriptor.version_text);
@@ -1531,10 +1501,12 @@ public:
   //--------------------
 
   tresult PLUGIN_API getClassInfoUnicode(int32 index, PClassInfoW* info) final {
+    printf("VST3_Plugin.getClassInfoUnicode\n");
     return kResultFalse;
   }
 
   tresult PLUGIN_API setHostContext(FUnknown* context) final {
+    printf("VST3_Plugin.setHostContext\n");
     MHostContext = context;
     return kResultOk;
   }
@@ -1547,11 +1519,12 @@ public:
 //
 //----------------------------------------------------------------------
 
-#ifdef VST3_LINUX
-  #define __VST3_DLLEXPORT  __attribute__ ((visibility ("default")))
+//#ifdef VST3_LINUX
+#ifdef __gnu_linux__
+  #define __VST3_DLLEXPORT __attribute__ ((visibility ("default")))
 #endif
 
-#ifdef KODE_WIN32
+#ifdef _WIN32
   #define __VST3_DLLEXPORT __attribute__ ((dllexport))
 #endif
 
@@ -1564,213 +1537,9 @@ IPluginFactory* PLUGIN_API vst3_entrypoint() VST3_MAIN_SYMBOL
                                                   \
   __VST3_DLLEXPORT                                \
   IPluginFactory* PLUGIN_API vst3_entrypoint() {  \
+    printf("GetPluginFactory\n");                 \
     return new VST3_Plugin<DESC,INST>();          \
   }
-
-//----------------------------------------------------------------------
-//
-// template
-//
-//----------------------------------------------------------------------
-
-//class template_descriptor : public VST3_Descriptor {
-//
-//public:
-//
-//  template_descriptor() {
-//    name              = "AGain";
-//    author            = "skei.audio";
-//    url               = "https://torhelgeskei.com";
-//    email             = "tor.helge.skei_at_gmail_dot_com";
-//    version_text      = "0.0.0";
-//    version           = 0;
-//    plugin_id[16]     = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-//    editor_id[16]     = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-//    is_synth          = false;
-//    has_editor        = false;
-//    can_send_midi     = false;
-//    can_receive_midi  = false;
-//    editor_width      = 0;
-//    editor_height     = 0;
-//    num_inputs        = 2;
-//    num_outputs       = 2;
-//    appendParameter( new VST3_Parameter("gain",1.0f) );
-//  }
-//
-//};
-//
-////----------
-//
-//class template_instance : public VST3_Instance {
-//
-//private:
-//
-//  float gain = 0.0f;
-//
-//public:
-//
-//  void on_create() final {}
-//  void on_destroy() final {}
-//  void on_initialize() final {}
-//  void on_terminate() final {}
-//  void on_activate() final {}
-//  void on_deactivate() final {}
-//  void on_prepare(float ASampleRate) final {}
-//  void on_midi(uint32_t AOffset, uint8_t AMsg1, uint8_t AMsg2, uint8_t AMsg3) final {}
-//  VST3_Editor* on_openEditor(VST3_EditorListener* AListener, VST3_Descriptor* ADescriptor, void* AParent) { return nullptr; }
-//  void on_closeEditor(VST3_Editor* AEditor) final {}
-//  void on_updateEditor(VST3_Editor* AEditor) final {}
-//  uint32_t on_saveState(void** ABuffer, uint32_t AMode) final { *ABuffer = nullptr; return 0; }
-//  void on_restoreState(uint32_t ASize, void* APointer, uint32_t AMode) final {}
-//
-//  void on_parameter(uint32_t AIndex, float AValue, uint32_t AMode) final {
-//    switch (AIndex) {
-//      case 0: gain = AValue; break;
-//    }
-//  }
-//
-//  void on_process(VST3_ProcessContext* AContext) final {
-//    float*    in0   = AContext->inputs[0];
-//    float*    in1   = AContext->inputs[1];
-//    float*    out0  = AContext->outputs[0];
-//    float*    out1  = AContext->outputs[1];
-//    uint32_t  len   = AContext->num_samples;
-//    for (uint32_t i=0; i<len; i++) {
-//      *out0++ = *in0++ * gain;
-//      *out1++ = *in1++ * gain;
-//    }
-//  }
-//
-//};
-//
-////----------
-//
-//VST3_ENTRYPOINT(template_descriptor,template_instance);
-
-//----------------------------------------------------------------------
-//
-// demo
-//
-//----------------------------------------------------------------------
-
-#ifdef VST3_DEMO
-
-class myDescriptor : public VST3_Descriptor {
-
-public:
-
-  myDescriptor() {
-    name = "AGain";
-    appendParameter( new VST3_Parameter("Gain",1.0f) );
-  }
-
-};
-
-//----------
-
-class myInstance : public VST3_Instance {
-
-private:
-
-  float MGain = 0.0f;
-
-public:
-
-  void on_parameter(uint32_t AIndex, float AValue, uint32_t AMode) final {
-    switch (AIndex) {
-      case 0: MGain = AValue; break;
-    }
-  }
-
-  void on_process(VST3_ProcessContext* AContext) final {
-    float*    in0   = AContext->inputs[0];
-    float*    in1   = AContext->inputs[1];
-    float*    out0  = AContext->outputs[0];
-    float*    out1  = AContext->outputs[1];
-    uint32_t  len   = AContext->num_samples;
-    for (uint32_t i=0; i<len; i++) {
-      *out0++ = *in0++ * MGain;
-      *out1++ = *in1++ * MGain;
-    }
-  }
-
-};
-
-//----------
-
-VST3_ENTRYPOINT(myDescriptor,myInstance);
-
-#endif // VST3-DEMO
-
-//----------------------------------------------------------------------
-//
-//
-//
-//----------------------------------------------------------------------
-
-/*
-
-  not sure how many of these are needed.. i just copied them from the
-  output of code::blocks when compiling..
-
-  -I../vst3_sdk points to where you have the vst sdk
-  (the directory containing the 'pluginterfaces' folder)
-
-  debug
-
-  g++
-    -Wall
-    -std=c++11
-    -m64
-    -fexceptions
-    -Wl,--as-needed
-    -fPIC
-    -g
-    -shared
-    -Wl,-Bsymbolic
-    -rdynamic
-    -I../vst3_sdk
-    -c main.cpp
-    -o main.o
-
-  g++
-    -shared
-    main.o
-    -o vst3_plugin.so
-    -m64
-    -lrt
-
-  release
-
-  g++
-    -Wall
-    -std=c++11
-    -m64
-    -fexceptions
-    -Wl,--as-needed
-    -fexpensive-optimizations
-    -O3
-    -fPIC
-    -shared
-    -fvisibility=hidden
-    -ffunction-sections
-    -fdata-sections
-    -msse4.1
-    -mfpmath=sse
-    -ffast-math
-    -I../vst3_sdk
-    -c main.cpp
-    -o main.o
-
-  g++
-    -shared
-    main.o
-    -o vst3_plugin.so
-    -m64
-    -s
-    -lrt
-
-*/
 
 //----------------------------------------------------------------------
 #endif
