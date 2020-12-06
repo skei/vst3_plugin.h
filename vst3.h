@@ -1,6 +1,9 @@
 #ifndef vst3_included
 #define vst3_included
 //----------------------------------------------------------------------
+// based on (extracted from) steinberg vst3 sdk (gpl3)
+
+//----------
 
 #ifdef __gnu_linux__
   //#define VST3_LINUX
