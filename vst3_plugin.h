@@ -20,14 +20,6 @@
 //
 //----------------------------------------------------------------------
 
-//#ifdef __gnu_linux__
-//  #define VST3_LINUX
-//#endif
-//
-//#ifdef _WIN32
-//  #define VST3_WIN32
-//#endif
-
 #include <memory.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -1220,11 +1212,11 @@ public:
 
   tresult PLUGIN_API isPlatformTypeSupported(FIDString type) final {
     // "X11EmbedWindowID"
-    #ifdef VST3_LINUX
+    #ifdef __gnu_linux__
     if (type && strcmp(type,kPlatformTypeX11EmbedWindowID) == 0) {
       return kResultOk;
     }
-    #endif // VST3_LINUX
+    #endif
     return kResultFalse;
   }
   tresult PLUGIN_API attached(void* parent, FIDString type) final {
@@ -1495,7 +1487,6 @@ public:
 //
 //----------------------------------------------------------------------
 
-//#ifdef VST3_LINUX
 #ifdef __gnu_linux__
   #define __VST3_DLLEXPORT __attribute__ ((visibility ("default")))
 #endif

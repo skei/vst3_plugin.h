@@ -193,6 +193,13 @@ typedef int32_t             UnitID;
         const char*         kEditor           = "editor";
         const CString       kFx					      = "Fx";
         const CString       kInstrument			  = "Instrument";
+
+        const FIDString kPlatformTypeHWND             = "HWND";
+        const FIDString kPlatformTypeHIView           = "HIView";
+        const FIDString kPlatformTypeNSView           = "NSView";
+        const FIDString kPlatformTypeUIView           = "UIView";
+        const FIDString kPlatformTypeX11EmbedWindowID = "X11EmbedWindowID";
+
 static  const UnitID        kNoParentUnitId   = -1;
 static  const ProgramListID kNoProgramListId  = -1;
 static  const uint32        kNoTail           = 0;
