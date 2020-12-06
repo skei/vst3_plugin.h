@@ -1,3 +1,10 @@
+how do licensing stuff work, related to steinbergs licensing here?
+
+(the vst3 specific header files are a 'fork' of the steinbergs official vst3 sdk (gpl3 license), but heavily modified and minified.. then a thin plugin abstraction is laid on top of this, and finally an example plugin)
+
+----------
+
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
