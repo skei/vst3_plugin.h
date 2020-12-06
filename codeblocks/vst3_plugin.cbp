@@ -7,19 +7,23 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="debug">
-				<Option output="bin/debug/vst3_plugin" prefix_auto="1" extension_auto="1" />
+				<Option output="../vst3_plugin.vst3/Contents/x86_64-linux/vst3_plugin" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).a" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).def" prefix_auto="0" extension_auto="1" />
 				<Option object_output="obj/debug/" />
-				<Option type="1" />
+				<Option type="3" />
 				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
 			</Target>
 			<Target title="release">
-				<Option output="bin/release/vst3_plugin" prefix_auto="1" extension_auto="1" />
+				<Option output="../vst3_plugin.vst3/Contents/x86_64-linux/vst3_plugin" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).a" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).def" prefix_auto="0" extension_auto="1" />
 				<Option object_output="obj/release/" />
-				<Option type="1" />
+				<Option type="3" />
 				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -30,7 +34,88 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-Wall" />
+			<Add option="-std=c++11" />
+			<Add option="-m64" />
+			<Add option="-fPIC" />
+			<Add option="-shared" />
+			<Add option="-fvisibility=hidden" />
+			<Add option="-Wl,--as-needed" />
 		</Compiler>
+		<Linker>
+			<Add option="-shared" />
+			<Add option="-m64" />
+			<Add option="-s" />
+			<Add library="rt" />
+		</Linker>
+		<Unit filename="../again.cpp" />
+		<Unit filename="../pluginterfaces/base/conststringtable.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="../pluginterfaces/base/conststringtable.h" />
+		<Unit filename="../pluginterfaces/base/coreiids.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="../pluginterfaces/base/doc.h" />
+		<Unit filename="../pluginterfaces/base/falignpop.h" />
+		<Unit filename="../pluginterfaces/base/falignpush.h" />
+		<Unit filename="../pluginterfaces/base/fplatform.h" />
+		<Unit filename="../pluginterfaces/base/fstrdefs.h" />
+		<Unit filename="../pluginterfaces/base/ftypes.h" />
+		<Unit filename="../pluginterfaces/base/funknown.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="../pluginterfaces/base/funknown.h" />
+		<Unit filename="../pluginterfaces/base/futils.h" />
+		<Unit filename="../pluginterfaces/base/fvariant.h" />
+		<Unit filename="../pluginterfaces/base/geoconstants.h" />
+		<Unit filename="../pluginterfaces/base/ibstream.h" />
+		<Unit filename="../pluginterfaces/base/icloneable.h" />
+		<Unit filename="../pluginterfaces/base/ierrorcontext.h" />
+		<Unit filename="../pluginterfaces/base/ipersistent.h" />
+		<Unit filename="../pluginterfaces/base/ipluginbase.h" />
+		<Unit filename="../pluginterfaces/base/istringresult.h" />
+		<Unit filename="../pluginterfaces/base/iupdatehandler.h" />
+		<Unit filename="../pluginterfaces/base/keycodes.h" />
+		<Unit filename="../pluginterfaces/base/pluginbasefwd.h" />
+		<Unit filename="../pluginterfaces/base/smartpointer.h" />
+		<Unit filename="../pluginterfaces/base/ucolorspec.h" />
+		<Unit filename="../pluginterfaces/base/ustring.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="../pluginterfaces/base/ustring.h" />
+		<Unit filename="../pluginterfaces/gui/iplugview.h" />
+		<Unit filename="../pluginterfaces/gui/iplugviewcontentscalesupport.h" />
+		<Unit filename="../pluginterfaces/test/itest.h" />
+		<Unit filename="../pluginterfaces/vst/ivstattributes.h" />
+		<Unit filename="../pluginterfaces/vst/ivstaudioprocessor.h" />
+		<Unit filename="../pluginterfaces/vst/ivstautomationstate.h" />
+		<Unit filename="../pluginterfaces/vst/ivstchannelcontextinfo.h" />
+		<Unit filename="../pluginterfaces/vst/ivstcomponent.h" />
+		<Unit filename="../pluginterfaces/vst/ivstcontextmenu.h" />
+		<Unit filename="../pluginterfaces/vst/ivsteditcontroller.h" />
+		<Unit filename="../pluginterfaces/vst/ivstevents.h" />
+		<Unit filename="../pluginterfaces/vst/ivsthostapplication.h" />
+		<Unit filename="../pluginterfaces/vst/ivstinterappaudio.h" />
+		<Unit filename="../pluginterfaces/vst/ivstmessage.h" />
+		<Unit filename="../pluginterfaces/vst/ivstmidicontrollers.h" />
+		<Unit filename="../pluginterfaces/vst/ivstnoteexpression.h" />
+		<Unit filename="../pluginterfaces/vst/ivstparameterchanges.h" />
+		<Unit filename="../pluginterfaces/vst/ivstplugview.h" />
+		<Unit filename="../pluginterfaces/vst/ivstprefetchablesupport.h" />
+		<Unit filename="../pluginterfaces/vst/ivstprocesscontext.h" />
+		<Unit filename="../pluginterfaces/vst/ivstrepresentation.h" />
+		<Unit filename="../pluginterfaces/vst/ivstunits.h" />
+		<Unit filename="../pluginterfaces/vst/vstpresetkeys.h" />
+		<Unit filename="../pluginterfaces/vst/vstpshpack4.h" />
+		<Unit filename="../pluginterfaces/vst/vstspeaker.h" />
+		<Unit filename="../pluginterfaces/vst/vsttypes.h" />
+		<Unit filename="../vst3.h" />
+		<Unit filename="../vst3_plugin.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
