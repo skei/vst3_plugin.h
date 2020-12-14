@@ -49,15 +49,3 @@ public:
 VST3_ENTRYPOINT(myDescriptor,myInstance);
 
 //----------------------------------------------------------------------
-
-class global_class {
-public:
-  global_class() {
-    printf("global_class\n");
-  }
-  ~global_class() {
-    printf("~global_class\n");
-  }
-};
-
-global_class global;
